@@ -99,7 +99,7 @@ expr_to_sql <- function(expr, env = parent.frame()) {
       "as.integer" = paste0("CAST(", args[[1]], " AS INTEGER)"),
       "as.character" = paste0("CAST(", args[[1]], " AS TEXT)"),
 
-      "row_number" = "ROW_NUMBER() OVER (ORDER BY (SELECT 1))",
+      "c" = paste(args, collapse = ", "),
       "lag"  = paste0("LAG(", args[[1]], ", ", if (length(args) >= 2) args[[2]] else "1", ") OVER (ORDER BY (SELECT 1))"),
       "lead" = paste0("LEAD(", args[[1]], ", ", if (length(args) >= 2) args[[2]] else "1", ") OVER (ORDER BY (SELECT 1))"),
 

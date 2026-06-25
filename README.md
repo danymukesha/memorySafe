@@ -1,4 +1,4 @@
-# [memorySafe:] The reason why you need a disk-backed data frame
+# [memorySafe:] Why you need a disk-backed data frame
 
 R usually loads everything in RAM. This is a problem, for example,
 A 2 GB CSV will crash your laptop if you try read.csv() on it.

@@ -1,3 +1,20 @@
+# memorySafe (development version: 0.1.0.9000)
+
+I just added benchmark to quantifies the actual tradeoffs:
+
+| Aspect               | `memorySafe`                                                    | In-memory                                                         |
+| -------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `disk_df` size       | **3.5 KB** (constant, regardless of dataset size)               | Scales with data size (**5 → 25 → 500+ MB**)                      |
+| `dplyr` pipeline     | SQL execution on disk, **zero-copy processing**                 | Creates **2–3 intermediate data.frames**, increasing memory usage |
+| Data larger than RAM | Works by **streaming/chunked execution**                        | Fails with **"cannot allocate vector"** errors                    |
+| Complex models       | Supports **piecewise processing** via `chunk_map()`             | Requires the **entire dataset in memory**                         |
+| Safety net           | `memory_safe_mode()` helps prevent accidental memory exhaustion | No built-in protection                                            |
+| Memory footprint     | Remains small and predictable                                   | Grows with dataset size and workflow complexity                   |
+| Scalability          | Designed for datasets exceeding available RAM                   | Limited by available system memory                                |
+
+
+The benchmark also surfaced (and led me to fix) a pre-existing bug: c() inside filter(x %in% c("a","b")) was unsupported because expr_to_sql had no handler for the c call — fixed at sql.R:84.
+
 # memorySafe 0.1.0
 
 * Initial development version.
