@@ -30,13 +30,14 @@ NULL
   packageStartupMessage(msg)
 }
 
-# Register finalizer to clean up SQLite connections
-reg.finalizer <- function(e, x) {
-  if (is.environment(e)) {
-    reg.finalizer(e, function(...) {
-      if (inherits(x, "disk_df") && DBI::dbIsValid(x$con)) {
-        DBI::dbDisconnect(x$con)
-      }
-    })
+# Register a finalizer to clean up SQLite connections when a disk_df is
+# garbage collected. This is set up externally by the user or by
+# tools that manage disk_df lifecycle.
+disk_df_finalize <- function(x) {
+  if (inherits(x, "disk_df")) {
+    con <- .subset2(x, "con")
+    if (DBI::dbIsValid(con)) {
+      DBI::dbDisconnect(con)
+    }
   }
 }

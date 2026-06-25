@@ -14,17 +14,17 @@ read_disk_csv(file, name = NULL, chunk_size = 5000, ...)
 \item{chunk_size}{Number of rows to read per chunk when loading into
 SQLite. Default 5000. Lower values use less RAM during loading.}
 
-\item{...}{Additional arguments passed to \code{\link[utils:read.csv]{utils::read.csv()}} for the
-first chunk (e.g. \code{sep}, \code{quote}, \code{stringsAsFactors}). These must be
+\item{...}{Additional arguments passed to [utils::read.csv()] for the
+first chunk (e.g. `sep`, `quote`, `stringsAsFactors`). These must be
 compatible with all chunks.}
 }
 \value{
 A disk_df.
 }
 \description{
-A convenience wrapper that reads a CSV file into a \link{disk_df} without
+A convenience wrapper that reads a CSV file into a [disk_df] without
 ever storing the full data in R's memory. The CSV is read line-by-line
-using \code{\link[utils:read.csv]{utils::read.csv()}} in chunks and written directly to SQLite.
+using [utils::read.csv()] in chunks and written directly to SQLite.
 }
 \examples{
 \dontrun{

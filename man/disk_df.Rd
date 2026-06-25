@@ -11,20 +11,20 @@ disk_df(x, name = NULL, ...)
 SQLite connection (via DBI). The most common usage is passing a
 data.frame.}
 
-\item{name}{Optional table name inside SQLite. If \code{NULL} (the default),
+\item{name}{Optional table name inside SQLite. If `NULL` (the default),
 the name is inferred from the object.}
 
 \item{...}{Additional arguments. For character input, these are passed to
-\code{\link[=read.csv]{read.csv()}} (e.g. \code{sep}, \code{stringsAsFactors}).}
+[read.csv()] (e.g. `sep`, `stringsAsFactors`).}
 }
 \value{
-An object of class \code{disk_df}.
+An object of class `disk_df`.
 }
 \description{
-\code{disk_df()} stores data in a local SQLite database so operations happen
+`disk_df()` stores data in a local SQLite database so operations happen
 out-of-memory. The result looks and feels like a tibble, but the full
 dataset is never loaded into RAM unless you explicitly request it with
-\code{\link[dplyr:collect]{collect()}}.
+[collect()].
 }
 \examples{
 df <- disk_df(mtcars)

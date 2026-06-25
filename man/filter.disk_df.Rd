@@ -10,17 +10,17 @@
 \item{.data}{A disk_df.}
 
 \item{...}{Logical predicates expressed in R syntax. They are translated
-to SQL, so only simple expressions work (comparisons, \code{&}, \code{|}, \code{!},
-\code{is.na()}, \code{\%in\%}).}
+to SQL, so only simple expressions work (comparisons, `&`, `|`, `!`,
+`is.na()`, `%in%`).}
 }
 \value{
 A disk_df with the filter operation queued.
 }
 \description{
-These methods let you use familiar dplyr verbs on a \link{disk_df} without
+These methods let you use familiar dplyr verbs on a [disk_df] without
 pulling data into memory. Each verb records the operation and returns a
-new \code{disk_df} — execution is lazy and happens only when you call
-\code{\link[dplyr:collect]{collect()}}.
+new `disk_df` — execution is lazy and happens only when you call
+[collect()].
 Subset rows with a SQL WHERE clause
 }
 \examples{

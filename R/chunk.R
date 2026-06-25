@@ -50,14 +50,12 @@ chunk_map <- function(.data, .f, .chunk_size = 10000,
 
   if (.progress) close(pb)
 
-  # Remove NULL / empty results
   results <- results[!vapply(results, is.null, logical(1))]
 
   if (.combine == "list") {
     return(results)
   }
 
-  # rbind
   if (length(results) == 0) {
     return(data.frame())
   }
@@ -83,21 +81,24 @@ chunk_split <- function(.data, .chunk_size = 10000) {
   n_total <- nrow(.data)
   n_chunks <- ceiling(n_total / .chunk_size)
 
+  con  <- .subset2(.data, "con")
+  tbl  <- .subset2(.data, "table")
+  ops  <- .subset2(.data, "ops")
+  nms  <- .subset2(.data, ".names")
+
   chunks <- vector("list", n_chunks)
 
   for (i in seq_len(n_chunks)) {
     offset <- (i - 1) * .chunk_size
     this_n <- min(.chunk_size, n_total - offset)
 
-    # Create a new disk_df that wraps a subquery limiting to this chunk
-    # We'll use a view or just store the offset info
     chunk <- structure(
       list(
-        con      = .data$con,
-        table    = .data$table,
-        ops      = .data$ops,
-        .dims    = c(this_n, length(.data$names)),
-        .names   = .data$.names,
+        con      = con,
+        table    = tbl,
+        ops      = ops,
+        .dims    = c(this_n, length(nms)),
+        .names   = nms,
         .offset  = offset,
         .limit   = this_n
       ),
@@ -107,7 +108,6 @@ chunk_split <- function(.data, .chunk_size = 10000) {
     chunks[[i]] <- chunk
   }
 
-  # Wrap chunks so collect/head works with the offset
   lapply(chunks, function(ch) {
     structure(ch, class = c("disk_df_chunk", "disk_df"))
   })
@@ -115,8 +115,9 @@ chunk_split <- function(.data, .chunk_size = 10000) {
 
 #' @export
 collect.disk_df_chunk <- function(x, ...) {
-  sql <- build_query(x, limit = x$.limit, offset = x$.offset)
-  out <- DBI::dbGetQuery(x$con, sql)
+  sql <- build_query(x, limit = .subset2(x, ".limit"),
+                     offset = .subset2(x, ".offset"))
+  out <- DBI::dbGetQuery(.subset2(x, "con"), sql)
   tibble::as_tibble(out)
 }
 
@@ -127,13 +128,17 @@ head.disk_df_chunk <- function(x, n = 6L, ...) {
 
 #' @export
 dim.disk_df_chunk <- function(x) {
-  x$.dims
+  .subset2(x, ".dims")
 }
 
 #' @export
 print.disk_df_chunk <- function(x, ...) {
-  cat("# A disk_df chunk: ", x$.dims[1], " rows x ", x$.dims[2], " cols\n", sep = "")
-  cat("# (rows ", x$.offset + 1, "-", x$.offset + x$.limit, " of parent)\n", sep = "")
-  head(x) |> tibble::as_tibble() |> print(...)
+  dims <- .subset2(x, ".dims")
+  offset <- .subset2(x, ".offset")
+  limit <- .subset2(x, ".limit")
+  cat("# A disk_df chunk: ", dims[1], " rows x ", dims[2], " cols\n", sep = "")
+  cat("# (rows ", offset + 1, "-", offset + limit, " of parent)\n", sep = "")
+  h <- head(x)
+  print(tibble::as_tibble(h), ...)
   invisible(x)
 }

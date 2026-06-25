@@ -18,23 +18,23 @@ chunk_map(
 
 \item{.f}{A function that takes a data.frame (or tibble) and returns
 another data.frame (or any object that can be combined with
-\code{\link[=rbind]{rbind()}}/\code{\link[vctrs:vec_rbind]{vctrs::vec_rbind()}}).}
+[rbind()]/[vctrs::vec_rbind()]).}
 
 \item{.chunk_size}{Number of rows per chunk. Default 10,000.}
 
-\item{.progress}{Show a progress bar? Default \code{FALSE}.}
+\item{.progress}{Show a progress bar? Default `FALSE`.}
 
-\item{.combine}{How to combine results. \code{"rbind"} (default) uses
-\code{\link[data.table:rbindlist]{data.table::rbindlist()}} or \code{\link[=rbind]{rbind()}}; \code{"list"} returns a list.}
+\item{.combine}{How to combine results. `"rbind"` (default) uses
+[data.table::rbindlist()] or [rbind()]; `"list"` returns a list.}
 
-\item{...}{Additional arguments passed to \code{.f}.}
+\item{...}{Additional arguments passed to `.f`.}
 }
 \value{
-If \code{.combine = "rbind"}, a data.frame. If \code{.combine = "list"},
-a list.
+If `.combine = "rbind"`, a data.frame. If `.combine = "list"`,
+  a list.
 }
 \description{
-Processes a \link{disk_df} in row-wise chunks, applying a function to each
+Processes a [disk_df] in row-wise chunks, applying a function to each
 chunk and collecting the results. This is useful for operations that
 can't be expressed as SQL (e.g., complex statistical models) but that
 can operate on subsets of the data.

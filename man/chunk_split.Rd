@@ -15,7 +15,7 @@ chunk_split(.data, .chunk_size = 10000)
 A list of disk_df objects, each limited to a subset of rows.
 }
 \description{
-Creates a list of \link{disk_df} objects, each pointing to a different slice of
+Creates a list of [disk_df] objects, each pointing to a different slice of
 the same underlying table. Useful for parallel processing.
 }
 \examples{

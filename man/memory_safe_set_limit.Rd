@@ -8,13 +8,13 @@ memory_safe_set_limit(limit_rows = NULL, limit_bytes = NULL, action = NULL)
 }
 \arguments{
 \item{limit_rows}{Maximum number of rows to allow in memory (default 100k).
-Set to \code{Inf} for no row limit.}
+Set to `Inf` for no row limit.}
 
 \item{limit_bytes}{Maximum number of bytes to allow (default 100 MB).
-Set to \code{Inf} for no byte limit.}
+Set to `Inf` for no byte limit.}
 
-\item{action}{What to do when a limit is exceeded: \code{"warning"} (default)
-or \code{"error"}.}
+\item{action}{What to do when a limit is exceeded: `"warning"` (default)
+or `"error"`.}
 }
 \value{
 Invisibly returns the previous limits as a list.

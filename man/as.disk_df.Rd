@@ -12,7 +12,7 @@ as.disk_df(x, ...)
 \item{...}{Additional arguments passed to methods.}
 }
 \value{
-A \code{disk_df}.
+A `disk_df`.
 }
 \description{
 Coerce to a disk_df

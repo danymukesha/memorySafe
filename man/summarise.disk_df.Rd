@@ -9,8 +9,8 @@
 \arguments{
 \item{.data}{A disk_df.}
 
-\item{...}{Name-value pairs of summary functions. Supported: \code{n()}, \code{sum},
-\code{mean}, \code{sd}, \code{min}, \code{max}, \code{median}, \code{n_distinct}, \code{first}, \code{last}.}
+\item{...}{Name-value pairs of summary functions. Supported: `n()`, `sum`,
+`mean`, `sd`, `min`, `max`, `median`, `n_distinct`, `first`, `last`.}
 }
 \value{
 A disk_df with the summarise operation queued.

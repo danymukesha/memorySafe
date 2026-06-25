@@ -51,7 +51,7 @@ memory_safe_check <- function(x, context = "operation", ...) {
   }
 
   n_rows <- nrow(x)
-  n_cols <- length(x$names)
+  n_cols <- length(names(x))
   limit_rows <- getOption("memorySafe.limit_rows", 100000)
   limit_bytes <- getOption("memorySafe.limit_bytes", 100e6)
   action <- getOption("memorySafe.action", "warning")

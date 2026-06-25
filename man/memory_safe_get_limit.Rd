@@ -7,7 +7,7 @@
 memory_safe_get_limit()
 }
 \value{
-A list with the current \code{limit_rows}, \code{limit_bytes}, and \code{action}.
+A list with the current `limit_rows`, `limit_bytes`, and `action`.
 }
 \description{
 Get current memory-safe limits

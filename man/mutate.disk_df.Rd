@@ -9,7 +9,7 @@
 \arguments{
 \item{.data}{A disk_df.}
 
-\item{...}{Name-value pairs of expressions, like \code{newcol = expr}.}
+\item{...}{Name-value pairs of expressions, like `newcol = expr`.}
 }
 \value{
 A disk_df with the mutate operation queued.
@@ -17,7 +17,7 @@ A disk_df with the mutate operation queued.
 \description{
 New columns are computed via SQL expressions. Only simple arithmetic,
 string, and conditional expressions are supported. For complex operations,
-use \code{\link[dplyr:collect]{collect()}} first.
+use [collect()] first.
 }
 \examples{
 df <- disk_df(mtcars)

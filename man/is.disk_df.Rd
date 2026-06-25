@@ -10,7 +10,7 @@ is.disk_df(x)
 \item{x}{An object to test.}
 }
 \value{
-\code{TRUE} if the object inherits from \code{disk_df}.
+`TRUE` if the object inherits from `disk_df`.
 }
 \description{
 Test if an object is a disk_df

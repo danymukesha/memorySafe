@@ -7,7 +7,7 @@
 memory_safe_mode(activate)
 }
 \arguments{
-\item{activate}{\code{TRUE} to enable memory-safe mode, \code{FALSE} to disable.
+\item{activate}{`TRUE` to enable memory-safe mode, `FALSE` to disable.
 If called without arguments, toggles the current state.}
 }
 \value{
@@ -15,17 +15,15 @@ The previous state of memory-safe mode (invisibly).
 }
 \description{
 When memory-safe mode is active, operations that would load a large amount
-of data into R's memory (like \code{\link[dplyr:collect]{collect()}}, \code{\link[=as.data.frame]{as.data.frame()}}, or
-\code{\link[tibble:as_tibble]{as_tibble()}}) will warn or error before proceeding.
+of data into R's memory (like [collect()], [as.data.frame()], or
+[as_tibble()]) will warn or error before proceeding.
 }
 \details{
 The limits are controlled by two options:
-\itemize{
-\item \code{memorySafe.limit_rows} (default 100,000): maximum rows allowed
-\item \code{memorySafe.limit_bytes} (default 100 MB): maximum estimated size
-\item \code{memorySafe.action} (default \code{"warning"}): one of \code{"warning"} or
-\code{"error"}
-}
+- `memorySafe.limit_rows` (default 100,000): maximum rows allowed
+- `memorySafe.limit_bytes` (default 100 MB): maximum estimated size
+- `memorySafe.action` (default `"warning"`): one of `"warning"` or
+  `"error"`
 }
 \examples{
 memory_safe_mode(TRUE)

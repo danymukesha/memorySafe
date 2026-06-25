@@ -63,6 +63,11 @@ summarise.disk_df <- function(.data, ...) {
 }
 
 #' @export
+summarize <- function(.data, ...) {
+  UseMethod("summarize")
+}
+
+#' @export
 summarize.disk_df <- summarise.disk_df
 
 #' Group data for subsequent summarise
@@ -112,7 +117,7 @@ arrange.disk_df <- function(.data, ...) {
 #' collect(filter(df, mpg > 20))
 collect.disk_df <- function(x, ...) {
   sql <- build_query(x)
-  out <- DBI::dbGetQuery(x$con, sql)
+  out <- DBI::dbGetQuery(.subset2(x, "con"), sql)
   tibble::as_tibble(out)
 }
 
@@ -123,10 +128,17 @@ collect.disk_df <- function(x, ...) {
 #' @returns A vector.
 #' @export
 pull.disk_df <- function(.data, var = -1, ...) {
-  if (is.numeric(var) && var < 0) {
-    var <- length(.data$.names) + var + 1
+  nms <- .subset2(.data, ".names")
+  var_expr <- substitute(var)
+  if (is.numeric(var_expr)) {
+    idx <- as.integer(var_expr)
+    if (idx < 0) idx <- length(nms) + idx + 1
+    nm <- nms[idx]
+  } else if (is.character(var_expr)) {
+    nm <- var_expr
+  } else {
+    nm <- as.character(var_expr)
   }
-  nm <- if (is.numeric(var)) .data$.names[var] else as.character(rlang::enquo(var))
   .data[[nm]]
 }
 
@@ -135,10 +147,13 @@ pull.disk_df <- function(.data, var = -1, ...) {
 #' @param ... Not used.
 #' @export
 glimpse.disk_df <- function(x, ...) {
-  cat("disk_df: ", nrow(x), " rows x ", length(x$names), " columns\n", sep = "")
-  for (nm in x$names) {
-    sql <- paste0("SELECT \"", nm, "\" FROM \"", x$table, "\" LIMIT 5")
-    sample <- DBI::dbGetQuery(x$con, sql)[[1]]
+  nms <- .subset2(x, ".names")
+  con <- .subset2(x, "con")
+  tbl <- .subset2(x, "table")
+  cat("disk_df: ", nrow(x), " rows x ", length(nms), " columns\n", sep = "")
+  for (nm in nms) {
+    sql <- paste0("SELECT \"", nm, "\" FROM \"", tbl, "\" LIMIT 5")
+    sample <- DBI::dbGetQuery(con, sql)[[1]]
     typ <- class(sample)[1]
     preview <- paste(head(sample, 3), collapse = ", ")
     cat(" $ ", nm, " <", typ, "> ", preview, if (length(sample) > 3) " ...", "\n", sep = "")

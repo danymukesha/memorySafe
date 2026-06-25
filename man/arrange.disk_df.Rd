@@ -9,7 +9,7 @@
 \arguments{
 \item{.data}{A disk_df.}
 
-\item{...}{Columns to order by. Use \code{\link[dplyr:desc]{desc()}} for descending order.}
+\item{...}{Columns to order by. Use [desc()] for descending order.}
 }
 \value{
 A disk_df with the arrange operation queued.

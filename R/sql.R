@@ -19,7 +19,8 @@ expr_to_sql <- function(expr, env = parent.frame()) {
       else if (is.na(val)) "NULL"
       else DBI::dbQuoteString(DBI::ANSI(), as.character(val))
     } else {
-      nm
+      # Column reference - quote it
+      paste0("\"", nm, "\"")
     }
   } else if (is.atomic(expr) && length(expr) == 1) {
     if (is.character(expr)) DBI::dbQuoteString(DBI::ANSI(), expr)
@@ -36,7 +37,7 @@ expr_to_sql <- function(expr, env = parent.frame()) {
       "-"  = if (length(args) == 1) paste0("-", args[[1]]) else glue_op("-", args, 2),
       "*"  = glue_op("*", args, 2),
       "/"  = glue_op("/", args, 2),
-      "^"  = glue_op("^", args, 2),
+      "^"  = paste0("POWER(", args[[1]], ", ", args[[2]], ")"),
       "%%" = glue_op("%", args, 2),
 
       ">"   = glue_op(">", args, 2),
@@ -197,8 +198,10 @@ op_mutate <- function(.data, ...) {
   )))
   .data[["ops"]] <- curr_ops
   nms <- .subset2(.data, ".names")
-  for (quo in dots) {
-    nm <- rlang::quo_name(quo)
+  dot_names <- names(dots)
+  for (i in seq_along(dots)) {
+    nm <- dot_names[i]
+    if (is.null(nm) || nm == "") nm <- rlang::quo_name(dots[[i]])
     if (!nm %in% nms) {
       nms <- c(nms, nm)
     }
@@ -289,6 +292,8 @@ build_query <- function(x, count = FALSE, limit = NULL, offset = NULL,
   ops   <- .subset2(x, "ops")
 
   current_cols <- names
+  pre_summary_cols <- NULL
+  pre_summary_exprs <- NULL
   group_cols <- character(0)
   is_grouped <- FALSE
   is_summary <- FALSE
@@ -312,9 +317,10 @@ build_query <- function(x, count = FALSE, limit = NULL, offset = NULL,
       },
 
       mutate = {
+        dot_names <- names(op$dots)
         for (i in seq_along(op$dots)) {
           quo <- op$dots[[i]]
-          nm <- names(op$dots)[i]
+          nm <- dot_names[i]
           if (is.null(nm) || nm == "") nm <- rlang::quo_name(quo)
           expr <- rlang::quo_get_expr(quo)
           env  <- rlang::quo_get_env(quo)
@@ -331,6 +337,8 @@ build_query <- function(x, count = FALSE, limit = NULL, offset = NULL,
 
       summarise = {
         is_summary <- TRUE
+        pre_summary_cols <- current_cols
+        pre_summary_exprs <- select_exprs
         if (is.null(select_exprs)) select_exprs <- list()
         summary_names <- op$new_names
         for (i in seq_along(op$dots)) {
@@ -368,18 +376,73 @@ build_query <- function(x, count = FALSE, limit = NULL, offset = NULL,
     )
   }
 
-  if (count) {
-    select_part <- "COUNT(*) AS n"
-  } else if (!is.null(select_cols)) {
-    cols <- paste0("\"", select_cols, "\"")
-    select_part <- paste(cols, collapse = ", ")
-  } else if (is_summary && !is.null(select_exprs)) {
-    cols <- vapply(select_exprs, function(e) {
-      paste0(e$sql, " AS \"", e$name, "\"")
-    }, character(1))
-    select_part <- paste(cols, collapse = ", ")
+  # Build the inner query (before summarise wrapping)
+  if (is_summary && !is.null(select_exprs)) {
+    # Summarise with existing select_exprs: wrap in subquery
+    # First build the inner SELECT with mutate columns
+    has_mutate <- any(vapply(ops, function(o) identical(o$type, "mutate"), logical(1)))
+    has_select <- any(vapply(ops, function(o) identical(o$type, "select"), logical(1)))
+
+    if (has_mutate && !is.null(pre_summary_exprs)) {
+      # Wrap in a subquery so computed columns are available
+      # For columns that came from mutate, use the expression; otherwise quote the name
+      expr_names <- vapply(pre_summary_exprs, `[[`, character(1), "name")
+      inner_cols <- character(0)
+      for (col in pre_summary_cols) {
+        if (col %in% expr_names) {
+          idx <- which(expr_names == col)
+          inner_cols <- c(inner_cols, paste0(pre_summary_exprs[[idx]]$sql, " AS \"", col, "\""))
+        } else {
+          inner_cols <- c(inner_cols, paste0("\"", col, "\""))
+        }
+      }
+      inner_select <- paste(inner_cols, collapse = ", ")
+
+      inner_sql <- paste0("SELECT ", inner_select, " FROM \"", table, "\"")
+      if (length(where_clauses) > 0) {
+        inner_sql <- paste0(inner_sql, " WHERE ",
+                            paste(where_clauses, collapse = " AND "))
+      }
+
+      # Now build summary SELECT on top
+      all_cols <- character(0)
+      for (gc in group_cols) {
+        all_cols <- c(all_cols, paste0("\"", gc, "\""))
+      }
+      for (e in select_exprs) {
+        all_cols <- c(all_cols, paste0(e$sql, " AS \"", e$name, "\""))
+      }
+      select_part <- paste(all_cols, collapse = ", ")
+
+      sql <- paste0("SELECT ", select_part, " FROM (", inner_sql, ") AS _inner")
+
+      if (length(group_cols) > 0) {
+        sql <- paste0(sql, " GROUP BY ",
+                      paste0("\"", group_cols, "\"", collapse = ", "))
+      }
+    } else {
+      # Simple summarise without preceding mutate
+      all_cols <- character(0)
+      for (gc in group_cols) {
+        all_cols <- c(all_cols, paste0("\"", gc, "\""))
+      }
+      for (e in select_exprs) {
+        all_cols <- c(all_cols, paste0(e$sql, " AS \"", e$name, "\""))
+      }
+      select_part <- paste(all_cols, collapse = ", ")
+      sql <- paste0("SELECT ", select_part, " FROM \"", table, "\"")
+      if (length(where_clauses) > 0) {
+        sql <- paste0(sql, " WHERE ", paste(where_clauses, collapse = " AND "))
+      }
+      if (length(group_cols) > 0) {
+        sql <- paste0(sql, " GROUP BY ",
+                      paste0("\"", group_cols, "\"", collapse = ", "))
+      }
+    }
   } else if (!is.null(select_exprs)) {
-    existing_cols <- setdiff(current_cols, vapply(select_exprs, `[[`, character(1), "name"))
+    # Mutate: include existing columns + computed ones
+    existing_cols <- setdiff(current_cols,
+                             vapply(select_exprs, `[[`, character(1), "name"))
     all_cols <- character(0)
     for (col in existing_cols) {
       all_cols <- c(all_cols, paste0("\"", col, "\""))
@@ -388,19 +451,31 @@ build_query <- function(x, count = FALSE, limit = NULL, offset = NULL,
       all_cols <- c(all_cols, paste0(e$sql, " AS \"", e$name, "\""))
     }
     select_part <- paste(all_cols, collapse = ", ")
+    sql <- paste0("SELECT ", select_part, " FROM \"", table, "\"")
+    if (length(where_clauses) > 0) {
+      sql <- paste0(sql, " WHERE ", paste(where_clauses, collapse = " AND "))
+    }
   } else {
-    qnames <- paste0("\"", current_cols, "\"")
-    select_part <- paste(qnames, collapse = ", ")
-  }
+    if (count) {
+      select_part <- "COUNT(*) AS n"
+    } else if (!is.null(select_cols)) {
+      cols <- paste0("\"", select_cols, "\"")
+      select_part <- paste(cols, collapse = ", ")
+    } else {
+      qnames <- paste0("\"", current_cols, "\"")
+      select_part <- paste(qnames, collapse = ", ")
+    }
 
-  sql <- paste0("SELECT ", select_part, " FROM \"", table, "\"")
+    sql <- paste0("SELECT ", select_part, " FROM \"", table, "\"")
 
-  if (length(where_clauses) > 0) {
-    sql <- paste0(sql, " WHERE ", paste(where_clauses, collapse = " AND "))
-  }
+    if (length(where_clauses) > 0) {
+      sql <- paste0(sql, " WHERE ", paste(where_clauses, collapse = " AND "))
+    }
 
-  if (length(group_cols) > 0) {
-    sql <- paste0(sql, " GROUP BY ", paste0("\"", group_cols, "\"", collapse = ", "))
+    if (length(group_cols) > 0) {
+      sql <- paste0(sql, " GROUP BY ",
+                    paste0("\"", group_cols, "\"", collapse = ", "))
+    }
   }
 
   if (length(order_clauses) > 0) {
