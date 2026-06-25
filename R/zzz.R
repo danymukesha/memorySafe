@@ -24,7 +24,7 @@ NULL
 .onAttach <- function(libname, pkgname) {
   msg <- paste0(
     "memorySafe ", utils::packageVersion("memorySafe"),
-    " — a disk-backed data.frame with memory-safe mode.\n",
+    " -- a disk-backed data.frame with memory-safe mode.\n",
     "See ?disk_df to get started, or memory_safe_mode() to enable protections."
   )
   packageStartupMessage(msg)

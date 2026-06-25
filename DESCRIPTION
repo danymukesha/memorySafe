@@ -1,7 +1,8 @@
 Package: memorySafe
 Title: Out-of-Memory Data with Memory-Safe Mode
 Version: 0.1.0
-Authors@R: person("Dany", "Mukesha", email = "danymukesha@gmail.com", role = c("aut", "cre"))
+Author: Dany Mukesha
+Maintainer: Dany Mukesha <danymukesha@gmail.com>
 Description: A high-level interface for working with out-of-memory data using
     a familiar data.frame-like interface. Data is stored in a local SQLite
     database and operations are translated to SQL, so you never need to load
@@ -19,4 +20,3 @@ Suggests:
     dplyr,
     testthat (>= 3.0.0)
 Encoding: UTF-8
-Config/roxygen2/version: 8.0.0
