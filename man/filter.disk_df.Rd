@@ -11,7 +11,7 @@
 
 \item{...}{Logical predicates expressed in R syntax. They are translated
 to SQL, so only simple expressions work (comparisons, `&`, `|`, `!`,
-`is.na()`, `%in%`).}
+`is.na()`, `\%in\%`).}
 }
 \value{
 A disk_df with the filter operation queued.

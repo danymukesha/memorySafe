@@ -18,7 +18,7 @@ set.seed(42)
 # ---------------------------------------------------------------------------
 # Generate synthetic datasets (as CSV files)
 # ---------------------------------------------------------------------------
-sizes <- c("S" = 1e4, "M" = 1e5, "L" = 5e5, "XL" = 1e7)
+sizes <- c("S" = 1e4, "M" = 1e5, "L" = 5e5)
 
 dir <- file.path(tempdir(), "memorySafe_bench")
 dir.create(dir, showWarnings = FALSE)
