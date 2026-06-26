@@ -1,6 +1,6 @@
 Package: memorySafe
 Title: Out-of-Memory Data with Memory-Safe Mode
-Version: 0.1.0.9000
+Version: 0.1.0.9001
 Author: Dany Mukesha
 Maintainer: Dany Mukesha <danymukesha@gmail.com>
 Description: A high-level interface for working with out-of-memory data using

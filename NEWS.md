@@ -1,3 +1,7 @@
+# memorySafe (development version)
+ 
+Fixed syntax bug in fx doc, add 1st benchmark chunk in readme
+
 # memorySafe (development version: 0.1.0.9000)
 
 I just added benchmark to quantifies the actual tradeoffs:
